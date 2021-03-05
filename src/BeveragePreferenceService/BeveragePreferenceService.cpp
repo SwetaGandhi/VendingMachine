@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   }
 
   // 3: get my port
-  int my_port = config_json["weather-service"]["port"];
+  int my_port = config_json["preference-service"]["port"];
 
   // 4: configure this server
   TThreadedServer server(
