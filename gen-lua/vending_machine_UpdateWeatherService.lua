@@ -9,25 +9,26 @@
 require 'Thrift'
 require 'vending_machine_ttypes'
 
-WeatherServiceClient = __TObject.new(__TClient, {
-  __type = 'WeatherServiceClient'
+UpdateWeatherServiceClient = __TObject.new(__TClient, {
+  __type = 'UpdateWeatherServiceClient'
 })
 
-function WeatherServiceClient:GetWeather(city)
-  self:send_GetWeather(city)
-  return self:recv_GetWeather(city)
+function UpdateWeatherServiceClient:UpdateWeather(city, w)
+  self:send_UpdateWeather(city, w)
+  self:recv_UpdateWeather(city, w)
 end
 
-function WeatherServiceClient:send_GetWeather(city)
-  self.oprot:writeMessageBegin('GetWeather', TMessageType.CALL, self._seqid)
-  local args = GetWeather_args:new{}
+function UpdateWeatherServiceClient:send_UpdateWeather(city, w)
+  self.oprot:writeMessageBegin('UpdateWeather', TMessageType.CALL, self._seqid)
+  local args = UpdateWeather_args:new{}
   args.city = city
+  args.w = w
   args:write(self.oprot)
   self.oprot:writeMessageEnd()
   self.oprot.trans:flush()
 end
 
-function WeatherServiceClient:recv_GetWeather(city)
+function UpdateWeatherServiceClient:recv_UpdateWeather(city, w)
   local fname, mtype, rseqid = self.iprot:readMessageBegin()
   if mtype == TMessageType.EXCEPTION then
     local x = TApplicationException:new{}
@@ -35,25 +36,21 @@ function WeatherServiceClient:recv_GetWeather(city)
     self.iprot:readMessageEnd()
     error(x)
   end
-  local result = GetWeather_result:new{}
+  local result = UpdateWeather_result:new{}
   result:read(self.iprot)
   self.iprot:readMessageEnd()
-  if result.success ~= nil then
-    return result.success
-  end
-  error(TApplicationException:new{errorCode = TApplicationException.MISSING_RESULT})
 end
-WeatherServiceIface = __TObject:new{
-  __type = 'WeatherServiceIface'
+UpdateWeatherServiceIface = __TObject:new{
+  __type = 'UpdateWeatherServiceIface'
 }
 
 
-WeatherServiceProcessor = __TObject.new(__TProcessor
+UpdateWeatherServiceProcessor = __TObject.new(__TProcessor
 , {
- __type = 'WeatherServiceProcessor'
+ __type = 'UpdateWeatherServiceProcessor'
 })
 
-function WeatherServiceProcessor:process(iprot, oprot, server_ctx)
+function UpdateWeatherServiceProcessor:process(iprot, oprot, server_ctx)
   local name, mtype, seqid = iprot:readMessageBegin()
   local func_name = 'process_' .. name
   if not self[func_name] or ttype(self[func_name]) ~= 'function' then
@@ -74,20 +71,20 @@ function WeatherServiceProcessor:process(iprot, oprot, server_ctx)
   end
 end
 
-function WeatherServiceProcessor:process_GetWeather(seqid, iprot, oprot, server_ctx)
-  local args = GetWeather_args:new{}
+function UpdateWeatherServiceProcessor:process_UpdateWeather(seqid, iprot, oprot, server_ctx)
+  local args = UpdateWeather_args:new{}
   local reply_type = TMessageType.REPLY
   args:read(iprot)
   iprot:readMessageEnd()
-  local result = GetWeather_result:new{}
-  local status, res = pcall(self.handler.GetWeather, self.handler, args.city)
+  local result = UpdateWeather_result:new{}
+  local status, res = pcall(self.handler.UpdateWeather, self.handler, args.city, args.w)
   if not status then
     reply_type = TMessageType.EXCEPTION
     result = TApplicationException:new{message = res}
   else
     result.success = res
   end
-  oprot:writeMessageBegin('GetWeather', reply_type, seqid)
+  oprot:writeMessageBegin('UpdateWeather', reply_type, seqid)
   result:write(oprot)
   oprot:writeMessageEnd()
   oprot.trans:flush()
@@ -96,11 +93,12 @@ end
 
 -- HELPER FUNCTIONS AND STRUCTURES
 
-GetWeather_args = __TObject:new{
-  city
+UpdateWeather_args = __TObject:new{
+  city,
+  w
 }
 
-function GetWeather_args:read(iprot)
+function UpdateWeather_args:read(iprot)
   iprot:readStructBegin()
   while true do
     local fname, ftype, fid = iprot:readFieldBegin()
@@ -112,38 +110,9 @@ function GetWeather_args:read(iprot)
       else
         iprot:skip(ftype)
       end
-    else
-      iprot:skip(ftype)
-    end
-    iprot:readFieldEnd()
-  end
-  iprot:readStructEnd()
-end
-
-function GetWeather_args:write(oprot)
-  oprot:writeStructBegin('GetWeather_args')
-  if self.city ~= nil then
-    oprot:writeFieldBegin('city', TType.I64, 1)
-    oprot:writeI64(self.city)
-    oprot:writeFieldEnd()
-  end
-  oprot:writeFieldStop()
-  oprot:writeStructEnd()
-end
-
-GetWeather_result = __TObject:new{
-  success
-}
-
-function GetWeather_result:read(iprot)
-  iprot:readStructBegin()
-  while true do
-    local fname, ftype, fid = iprot:readFieldBegin()
-    if ftype == TType.STOP then
-      break
-    elseif fid == 0 then
+    elseif fid == 2 then
       if ftype == TType.I32 then
-        self.success = iprot:readI32()
+        self.w = iprot:readI32()
       else
         iprot:skip(ftype)
       end
@@ -155,13 +124,42 @@ function GetWeather_result:read(iprot)
   iprot:readStructEnd()
 end
 
-function GetWeather_result:write(oprot)
-  oprot:writeStructBegin('GetWeather_result')
-  if self.success ~= nil then
-    oprot:writeFieldBegin('success', TType.I32, 0)
-    oprot:writeI32(self.success)
+function UpdateWeather_args:write(oprot)
+  oprot:writeStructBegin('UpdateWeather_args')
+  if self.city ~= nil then
+    oprot:writeFieldBegin('city', TType.I64, 1)
+    oprot:writeI64(self.city)
     oprot:writeFieldEnd()
   end
+  if self.w ~= nil then
+    oprot:writeFieldBegin('w', TType.I32, 2)
+    oprot:writeI32(self.w)
+    oprot:writeFieldEnd()
+  end
+  oprot:writeFieldStop()
+  oprot:writeStructEnd()
+end
+
+UpdateWeather_result = __TObject:new{
+
+}
+
+function UpdateWeather_result:read(iprot)
+  iprot:readStructBegin()
+  while true do
+    local fname, ftype, fid = iprot:readFieldBegin()
+    if ftype == TType.STOP then
+      break
+    else
+      iprot:skip(ftype)
+    end
+    iprot:readFieldEnd()
+  end
+  iprot:readStructEnd()
+end
+
+function UpdateWeather_result:write(oprot)
+  oprot:writeStructBegin('UpdateWeather_result')
   oprot:writeFieldStop()
   oprot:writeStructEnd()
 end
